@@ -181,9 +181,11 @@ class DataCleaner:
 
 if __name__ == '__main__':
     # Ścieżki
-    input_dir = '/home/ubuntu/tmdb-neo4j-pipeline/data/raw'
-    output_dir = '/home/ubuntu/tmdb-neo4j-pipeline/data/processed'
-    
+    #input_dir = '/home/ubuntu/tmdb-neo4j-pipeline/data/raw'
+    #output_dir = '/home/ubuntu/tmdb-neo4j-pipeline/data/processed'
+    input_dir = 'data/raw'
+    output_dir = 'data/processed'
+        
     # Przetwarzanie
     cleaner = DataCleaner(input_dir, output_dir)
     cleaner.process_all()
