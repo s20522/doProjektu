@@ -1,6 +1,6 @@
 """
 Data Cleaner - Czyszczenie i transformacja danych MPST
-Konwersja CSV → JSON z walidacją i czyszczeniem danych
+Pobranie danych z HuggingFace, konwersja CSV → JSON z walidacją i czyszczeniem danych
 """
 
 import pandas as pd
@@ -179,6 +179,48 @@ class DataCleaner:
             logger.info(f"  {tag}: {count}")
 
 
+def download_dataset_from_huggingface(output_dir: Path):
+    """Pobieranie datasetu MPST z HuggingFace i zapis do CSV"""
+    
+    try:
+        from datasets import load_dataset
+    except ImportError:
+        logger.error("Pakiet 'datasets' nie jest zainstalowany!")
+        logger.error("Zainstaluj: pip install datasets")
+        return False
+    
+    try:
+        logger.info("Pobieranie datasetu z HuggingFace...")
+        logger.info("Dataset: cryptexcode/MPST")
+        
+        # Pobranie datasetu
+        ds = load_dataset("cryptexcode/MPST")
+        
+        # Zapis każdego split'a do CSV
+        for split_name in ds.keys():
+            logger.info(f"\nPrzetwarzanie split: {split_name}")
+            
+            split_data = ds[split_name]
+            logger.info(f"Liczba rekordów: {len(split_data)}")
+            
+            # Konwersja do DataFrame
+            df = split_data.to_pandas()
+            
+            # Zapis do CSV
+            csv_filename = f"mpst_{split_name}.csv"
+            csv_path = output_dir / csv_filename
+            
+            df.to_csv(csv_path)
+            logger.info(f"✅ Zapisano: {csv_path}")
+        
+        logger.info("\n✅ Dataset został pomyślnie pobrany!")
+        return True
+        
+    except Exception as e:
+        logger.error(f"❌ Błąd podczas pobierania datasetu: {e}")
+        return False
+
+
 if __name__ == '__main__':
     # Ścieżki względne - względem bieżącego katalogu
     # Jeśli skrypt jest w scripts/utils/, to parent.parent da nam główny folder projektu
@@ -195,6 +237,22 @@ if __name__ == '__main__':
     logger.info(f"Folder wejściowy: {input_dir}")
     logger.info(f"Folder wyjściowy: {output_dir}")
     
+    # Sprawdzenie czy pliki CSV już istnieją
+    csv_files = ['mpst_train.csv', 'mpst_validation.csv', 'mpst_test.csv']
+    csv_exists = all((input_dir / f).exists() for f in csv_files)
+    
+    if not csv_exists:
+        logger.info("\n⏳ Pliki CSV nie znalezione. Pobieranie z HuggingFace...")
+        success = download_dataset_from_huggingface(input_dir)
+        if not success:
+            logger.error("Nie udało się pobrać datasetu. Zakończenie.")
+            exit(1)
+    else:
+        logger.info("✅ Pliki CSV już istnieją. Pomijanie pobierania.")
+    
     # Przetwarzanie
+    logger.info("\n⏳ Czyszczenie i transformacja danych...")
     cleaner = DataCleaner(str(input_dir), str(output_dir))
     cleaner.process_all()
+    
+    logger.info("\n✅ Gotowe!")
