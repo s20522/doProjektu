@@ -34,7 +34,7 @@ class ChromaDBImporter:
     def verify_connection(self) -> bool:
         """Weryfikacja połączenia z ChromaDB"""
         try:
-            response = requests.get(f"{self.base_url}/api/v2/heartbeat", timeout=5)
+            response = requests.get(f"{self.base_url}/api/v1/heartbeat", timeout=5)
             if response.status_code == 200:
                 logger.info("✓ Połączenie z ChromaDB potwierdzone")
                 return True
@@ -46,7 +46,7 @@ class ChromaDBImporter:
         """Pobranie lub utworzenie kolekcji"""
         try:
             response = requests.post(
-                f"{self.base_url}/api/v2/collections",
+                f"{self.base_url}/api/v1/collections",
                 json={
                     "name": self.collection_name,
                     "metadata": {"hnsw:space": "cosine"}
@@ -106,7 +106,7 @@ class ChromaDBImporter:
         """Import batcha do ChromaDB"""
         try:
             response = requests.post(
-                f"{self.base_url}/api/v2/collections/{self.collection_name}/add",
+                f"{self.base_url}/api/v1/collections/{self.collection_name}/add",
                 json={
                     "ids": ids,
                     "documents": documents,
@@ -122,7 +122,7 @@ class ChromaDBImporter:
         """Wyszukiwanie filmów na podstawie zapytania"""
         try:
             response = requests.post(
-                f"{self.base_url}/api/v2/collections/{self.collection_name}/query",
+                f"{self.base_url}/api/v1/collections/{self.collection_name}/query",
                 json={
                     "query_texts": [query],
                     "n_results": n_results
@@ -152,7 +152,7 @@ class ChromaDBImporter:
         """Pobranie statystyk kolekcji"""
         try:
             response = requests.get(
-                f"{self.base_url}/api/v2/collections/{self.collection_name}"
+                f"{self.base_url}/api/v1/collections/{self.collection_name}"
             )
             
             if response.status_code == 200:
