@@ -1,8 +1,8 @@
 # TMDB (MPST) Neo4j & ChromaDB Data Pipeline
 
-## O Projekcie
-
 Ten projekt to **kompletny system do zarządzania i analizy danych filmowych** przy użyciu nowoczesnych technologii baz danych. Projekt łączy trzy kluczowe komponenty:
+
+## O Projekcie
 
 ### 🎯 Cel Projektu
 
@@ -48,14 +48,13 @@ Celem jest **zbudowanie inteligentnego systemu wyszukiwania i analizy filmów** 
 
 ## Architektura Systemu
 
-Projekt wykorzystuje konteneryzację Docker do uruchomienia całego środowiska:
+Projekt wykorzystuje Docker Compose do uruchomienia całego środowiska:
 
 | Komponent | Rola | Port | Zastosowanie |
 |-----------|------|------|--------------|
+| **Ollama (Mistral)** | Local LLM | 11434 | Lokalne modele AI do przetwarzania naturalnego języka |
 | **Neo4j** | Graph Database | 7474/7687 | Przechowywanie relacji między filmami, osobami i gatunkami |
 | **ChromaDB** | Vector Database | 8000 | Przechowywanie embeddings streszczeń dla wyszukiwania semantycznego |
-| **Ollama** | Local LLM | 11434 | Lokalne modele AI do przetwarzania naturalnego języka |
-| **Python App** | Data Pipeline | - | Czyszczenie danych i import do baz |
 
 ## Wymagania
 
@@ -80,7 +79,6 @@ cp .env.example .env
 ### 2. Uruchomienie środowiska Docker
 
 ```bash
-cd docker
 docker-compose up -d
 ```
 
@@ -100,7 +98,7 @@ pip install -r requirements.txt
 Pobierz dane z HuggingFace i oczyść je (CSV → JSON):
 
 ```bash
-python scripts/utils/data_cleaner.py
+python3 scripts/utils/data_cleaner.py
 ```
 
 Skrypt ten pobierze dane z `cryptexcode/MPST`, oczyści je i wygeneruje zoptymalizowany plik JSON w folderze `data/processed/`.
@@ -112,7 +110,7 @@ Skrypt ten pobierze dane z `cryptexcode/MPST`, oczyści je i wygeneruje zoptymal
 Uruchom główny skrypt importujący dane do Neo4j i ChromaDB:
 
 ```bash
-python scripts/import/run_all_imports.py
+python3 scripts/import/run_all_imports.py
 ```
 
 ## Struktura Grafu (Neo4j)
@@ -187,22 +185,29 @@ Po poprawnym uruchomieniu pipeline'u, baza będzie zawierać:
 
 ```
 doProjektu/
+├── app/                       # Aplikacja Python
+│   ├── config/               # Konfiguracja
+│   │   └── config.py         # Zmienne środowiskowe
+│   └── main.py               # Główna aplikacja (Text-to-Cypher)
 ├── data/
-│   ├── raw/               # Surowe pliki CSV pobrane z HuggingFace
-│   └── processed/         # Oczyszczone i sformatowane pliki JSON
-├── docker/
-│   ├── docker-compose.yml # Konfiguracja usług (Neo4j, ChromaDB, Ollama)
-│   └── Dockerfile         # Obraz aplikacji importującej
+│   ├── raw/                  # Surowe pliki CSV z HuggingFace
+│   └── processed/            # Oczyszczone pliki JSON
 ├── scripts/
-│   ├── import/            # Skrypty importujące do baz danych
+│   ├── import/               # Skrypty importujące do baz danych
 │   │   ├── chromadb_importer.py   # Import do ChromaDB
 │   │   ├── neo4j_importer.py      # Import do Neo4j
 │   │   └── run_all_imports.py     # Orchestracja wszystkich importów
-│   └── utils/             # Narzędzia pomocnicze
+│   └── utils/                # Narzędzia pomocnicze
 │       └── data_cleaner.py        # Czyszczenie i transformacja danych
-├── .env.example           # Szablon konfiguracji
-├── requirements.txt       # Zależności Python
-└── README.md              # Dokumentacja projektu
+├── .env                       # Zmienne środowiskowe (git ignored)
+├── .env.example              # Szablon konfiguracji
+├── docker-compose.yml        # Konfiguracja Docker Compose
+├── Dockerfile                # Obraz Ollama z Python
+├── entrypoint.sh             # Skrypt startowy
+├── requirements.txt          # Zależności Python
+├── README.md                 # Dokumentacja projektu
+├── TUTORIAL.md               # Tutorial dla początkujących
+└── QUICK_START.md            # Quick start dla doświadczonych
 ```
 
 ## Komponenty Projektu
@@ -230,6 +235,11 @@ doProjektu/
 - Orchestracja wszystkich importów
 - Raportowanie błędów
 - Podsumowanie wyników
+
+### 5. Text-to-Cypher (`app/main.py`)
+- Konwersja naturalnego języka na zapytania Cypher
+- Integracja z Ollama (Mistral)
+- Wykonywanie zapytań na Neo4j
 
 ## Status Testów
 
@@ -260,7 +270,7 @@ Możesz łatwo rozszerzyć projekt o:
 
 ## Autor
 
-Projekt przygotowany przez **Manus AI**.
+Projekt przygotowany przez **Manus AI** w integracji z kodem Docker kolegi.
 
 ## Licencja
 
