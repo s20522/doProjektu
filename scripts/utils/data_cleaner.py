@@ -180,10 +180,21 @@ class DataCleaner:
 
 
 if __name__ == '__main__':
-    # Ścieżki
-    input_dir = '/home/ubuntu/tmdb-neo4j-pipeline/data/raw'
-    output_dir = '/home/ubuntu/tmdb-neo4j-pipeline/data/processed'
+    # Ścieżki względne - względem bieżącego katalogu
+    # Jeśli skrypt jest w scripts/utils/, to parent.parent da nam główny folder projektu
+    script_dir = Path(__file__).resolve().parent  # scripts/utils/
+    project_root = script_dir.parent.parent  # Główny folder projektu
+    
+    input_dir = project_root / 'data' / 'raw'
+    output_dir = project_root / 'data' / 'processed'
+    
+    # Tworzenie folderów jeśli nie istnieją
+    input_dir.mkdir(parents=True, exist_ok=True)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    
+    logger.info(f"Folder wejściowy: {input_dir}")
+    logger.info(f"Folder wyjściowy: {output_dir}")
     
     # Przetwarzanie
-    cleaner = DataCleaner(input_dir, output_dir)
+    cleaner = DataCleaner(str(input_dir), str(output_dir))
     cleaner.process_all()
